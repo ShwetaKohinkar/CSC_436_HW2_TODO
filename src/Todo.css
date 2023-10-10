@@ -1,0 +1,84 @@
+.container-todo{
+    height: auto;
+    padding: 2vw;
+}
+.container .row a{
+    width: fit-content;
+
+}
+.wrapper .card{
+    border: 0;
+}
+.wrapper{
+    box-shadow: 0 0 20px rgba(104, 85, 224, 0.6);
+    border: 1px solid lightgray;
+    display: block;
+    margin: 4em auto;
+    border-radius: 1em;
+    text-align: center;
+    width: fit-content;
+    width: 35em;
+    margin-top: 5em;
+}
+
+.label-todo{
+    font-size:x-large;
+    font-weight: 900;
+}
+.details-todo{
+    padding: 2vw 2vw 0 2vw;
+    width: 100%;
+}
+
+.todo-row-margin{
+    margin-bottom: 2em;
+}
+.row-details-todo{
+    text-align: -webkit-center;
+}
+
+.input-addTodo{
+    background-color: #e8e8e8;
+    border-radius: 20px;
+    border: 0;
+    box-shadow: 0px 0px 2px 2px lightgray;
+    width: 20em;
+    
+    
+}
+
+.button-add{
+    
+    color: rgb(104, 85, 224);
+    background-color: rgba(255, 255, 255, 1);
+    border-radius: 20px 20px;
+    font-weight: 600;
+    height: 2em;
+    transition: 0.5s;
+
+    text-decoration: none;
+    text-align: center;
+    align-items: center;
+    display: grid;
+}
+
+.button-add:hover {
+    color: white;
+    box-shadow: 0 0 20px rgba(104, 85, 224, 0.6);
+    background-color: rgba(104, 85, 224, 1);
+  }
+
+  .row-details-todo button{
+    width: fit-content;
+
+  }
+
+  .task-wrapper{
+    border: 1px solid lightgray;
+    margin: 1em;
+    border-radius: 5px;
+  }
+  .content-col{
+    text-align: left;
+    font-size: smaller;
+  }
