@@ -1,41 +1,62 @@
+
 .container-todo{
-    height: auto;
+    height: 100vh;
     padding: 2vw;
+}
+.container .row {
+    margin: 0;
 }
 .container .row a{
     width: fit-content;
 
 }
-.wrapper .card{
+.wrapper-todo .card{
     border: 0;
-}
-.wrapper{
     box-shadow: 0 0 20px rgba(104, 85, 224, 0.6);
     border: 1px solid lightgray;
-    display: block;
-    margin: 4em auto;
+    margin: auto;
     border-radius: 1em;
     text-align: center;
-    width: fit-content;
-    width: 35em;
-    margin-top: 5em;
+    width: 100%;
+    display: grid;
+
+}
+.button-signout-justify{
+    display: flex;
+}
+.wrapper-todo{
+   width: 100%;
+   padding: auto 10vw;
+   display: grid;
+   gap: 1rem;
+   padding: 0 25vw;
+
+}
+.left-content{
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 0;
 }
 
+.right-content{
+    align-items: center;
+}
 .label-todo{
     font-size:x-large;
     font-weight: 900;
 }
 .details-todo{
-    padding: 2vw 2vw 0 2vw;
+    padding: 2vw ;
     width: 100%;
+   
 }
 
-.todo-row-margin{
-    margin-bottom: 2em;
+.details-todo .row{
+    display: grid;
+    grid-auto-flow: column;
 }
-.row-details-todo{
-    text-align: -webkit-center;
-}
+
 
 .input-addTodo{
     background-color: #e8e8e8;
@@ -46,7 +67,13 @@
     
     
 }
-
+.container-todo .row .button-logout{
+    border: 2px solid #6855e0;
+    color: rgb(104, 85, 224);
+    background-color: rgb(255 255 255);
+    width: fit-content;
+    border-radius: 0px 10px;
+}
 .button-add{
     
     color: rgb(104, 85, 224);
@@ -55,7 +82,6 @@
     font-weight: 600;
     height: 2em;
     transition: 0.5s;
-
     text-decoration: none;
     text-align: center;
     align-items: center;
@@ -72,13 +98,55 @@
     width: fit-content;
 
   }
-
-  .task-wrapper{
+  .tasks-wrapper{
+    box-shadow: 0 0 20px rgba(104, 85, 224, 0.6);
     border: 1px solid lightgray;
-    margin: 1em;
+    box-shadow: 0 0 20px rgba(104, 85, 224, 0.6);
+    border: 1px solid lightgray;
+    margin: auto;
+    border-radius: 1em;
+    text-align: center;
+    width: 35em;
+    display: grid;
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .todo-wrapper{
+    border: 1px solid lightgray;
     border-radius: 5px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-self: center;
+    gap: 1rem
+  }
+
+  .todo-wrapper .row{
+    width: 100%;
+    display: flex;
   }
   .content-col{
     text-align: left;
     font-size: smaller;
+  }
+
+  .button-delete{
+    background-image: url('./Images/delete.png');
+    background-size: cover;
+    width: 25px;
+    height: 25px;
+    border: none;
+    cursor: pointer;
+    background-color: transparent;
+  }
+
+  .button-delete-div{
+    align-self: center;
+    padding: 0 !important;
+
+  }
+
+  .label-error{
+    color: red;
   }
