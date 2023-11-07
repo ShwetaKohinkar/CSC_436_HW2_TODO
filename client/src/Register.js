@@ -1,10 +1,18 @@
-import { BrowserRouter, Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { useResource } from 'react-request-hook';
 
 import './Register.css'
-import { useState } from 'react';
-function Register({registerEventBind}) {
+import { useContext, useState, useEffect } from 'react';
+import { StateContext } from './context';
+function Register() {
 
-    const [userName, setUserName] =  useState('');
+
+    const [registerResponse, registerUser] = useResource(()=>({
+        url: '/users',
+        method: 'post',
+        data: {email: email, password: password}
+    }));
+    const stateContext = useContext(StateContext);
     const [email, setEmail] =  useState('');
     const [password, setPassword] =  useState('');
     const [passwordMatch, setPasswordMatch] =  useState(true);
@@ -12,17 +20,27 @@ function Register({registerEventBind}) {
 
     const onSubmitHandler=(e) =>{
         e.preventDefault();
-        registerEventBind(registeredUser);
-        navigate("/");
+        registerUser();
+
     };
 
+    const registerDispatcher = (registerResponseIn) =>{
+        stateContext.dispatchUsers({type: 'REGISTER', user : registerResponseIn.data});
+        navigate("/");
+    }
+
+    useEffect(()=>{
+        if(registerResponse?.data){
+         registerDispatcher(registerDispatcher);
+        }
+
+    },[registerResponse]);
 
     const registeredUser = {
-       user: {"userName" : userName, "email": email, "password": password},
+       user: { "email": email, "password": password},
        todos: []
     }; 
     const handleConfirmPassword = (e) =>{
-        console.log("password");
         setPasswordMatch(password === e.target.value);
     }
 
@@ -33,7 +51,6 @@ function Register({registerEventBind}) {
                 <label className='label' >SIGN UP</label>
                 <div className='details'>
                     <div className='row'>
-                        <input className='input-register' onChange={(e) => setUserName(e.target.value)} type="text" name="username" placeholder="Username" required/>
                         <input className='input-register' onChange={(e) => setEmail(e.target.value)} type="email"name="email" placeholder="Email" required/>
                         <input className='input-register' onChange={(e) => setPassword(e.target.value)} type="password" name="password" placeholder="Password" required/>
                         <input className='input-register' onBlur={(e) => handleConfirmPassword(e) } type="password" name="confirmPassword" placeholder="Confirm Password" required/>

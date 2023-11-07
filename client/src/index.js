@@ -4,13 +4,19 @@ import './index.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 import 'bootstrap/dist/css/bootstrap.min.css';
-import 'bootstrap/dist/js/bootstrap.min.js';
+import 'bootstrap/dist/js/bootstrap.min';
+import axios from 'axios';
+import { RequestProvider } from 'react-request-hook';
 
+
+const axiosInstance = axios.create({baseURL: 'http://localhost:4000/'});
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <React.StrictMode>
-    <App/>
+    <RequestProvider value={axiosInstance}>
+      <App/>
+    </RequestProvider>
   </React.StrictMode>
 );
 

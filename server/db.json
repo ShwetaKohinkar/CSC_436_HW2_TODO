@@ -1,0 +1,38 @@
+{
+  "users": [
+    {
+      "email": "aa@gmail.com",
+      "password": "$2a$10$p1zQRhEDlyOCdiwr./H3bOVQhA4RJqsB.qciQUp0QBpJdYxHsGFI.",
+      "id": 1
+    }
+  ],
+  "todos": [
+    {
+      "title": "test",
+      "description": "test",
+      "email": "aa@gmail.com",
+      "dateCreated": "11/6/2023",
+      "isCompleted": true,
+      "dateCompleted": "11/6/2023",
+      "id": 10
+    },
+    {
+      "title": "wqwe",
+      "description": "dfdsf",
+      "email": "aa@gmail.com",
+      "dateCreated": "11/7/2023",
+      "isCompleted": true,
+      "dateCompleted": "11/7/2023",
+      "id": 14
+    },
+    {
+      "title": "qqq",
+      "description": "qqq",
+      "email": "aa@gmail.com",
+      "dateCreated": "11/7/2023",
+      "isCompleted": false,
+      "dateCompleted": null,
+      "id": 15
+    }
+  ]
+}

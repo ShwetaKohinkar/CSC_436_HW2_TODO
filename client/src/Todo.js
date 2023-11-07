@@ -1,6 +1,9 @@
-import { BrowserRouter, Link, useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './Todo.css'
-import { useEffect, useReducer, useState } from 'react';
+import { useContext, useEffect, useReducer, useState } from 'react';
+import { StateContext } from './context';
+import { useResource } from 'react-request-hook';
+
 
 const taskReducer = (tasks, action) => {
 
@@ -10,90 +13,138 @@ const taskReducer = (tasks, action) => {
 
         case 'toggle':
 
-            tasks.map((val, i) =>{
-                if(i===action.index){
-                    val.isCompleted = action.value;
-                    if(val.isCompleted){
-                        val.dateCompleted =  new Date().toLocaleDateString();
-                    }
-                    else{
-                        val.dateCompleted =  '';
-                    }
+            tasks.map((val) =>{
+                if(val.id===action.value.id){
+                    val = action.value;
                 }
-
             });
             return [...tasks];
 
         case 'delete':
-            tasks = tasks.filter((val, i) => i != action.index);
-            console.log("Hellooo");
+            tasks = tasks.filter((val) => val.id != action.value);
 
             return[...tasks];
+
+        case 'loadTodos':
+                
+                return [...action.todos];
         default:
             return tasks;
 
     }
 };
 
-function Todo({todoEventBind, loggedInUser}) {
+function Todo() {
 
+    const stateContext = useContext(StateContext);
     const [id, setID] = useState('');
     const [task, setTask] = useState('');
     const [description, setDescription] = useState('');
-    const [author, setAuthor] = useState(loggedInUser.user.userName);
+    const [email, setEmail] = useState(stateContext?.loggedInUser?.user?.email);
 
-    const location = useLocation();
-    const[tasks, dispatchTasks] = useReducer(taskReducer, loggedInUser.todos);
+    const[tasks, dispatchTasks] = useReducer(taskReducer, []);
     const navigate = useNavigate();
+    
+    const [todoResponse, getTodos]  = useResource(()=>({
+        url: `/todos?email=${email}`,
+        method: 'get'
+    }));
+
+    const [deleteResponse, deleteTodo]  = useResource((item)=>({
+        url: `/todos/${item.id}`,
+        method: 'delete'
+    }));
+
+    const [prevAddId, setPrevID] = useState();
+    const [addResponse, addTodoFunc] = useResource((item)=>({
+        url: '/todos',
+        method: 'post',
+        data: item
+    }));
+
+    const [toggleResponse, toggleTodo] = useResource((item)=>({
+        url: `/todos/${item.id}`,
+        method: 'put',
+        data: item
+    }));
+
     function addTask(e){
         e.preventDefault();
        
-        setID(id + 1);
         const item ={
-            id,
             "title" : task,
             "description": description,
-            "author": author,
+            "email": email,
             "dateCreated": new Date().toLocaleDateString(),
             "isCompleted": false, 
-            "dateCompleted": ''
+            "dateCompleted": null
+        }   
+        addTodoFunc(item);
+    }
+
+    const addDispatcher=(dataResponse)=>{
+        if(dataResponse?.data && prevAddId !== dataResponse.data.id){
+            dispatchTasks({type: 'add', todo: dataResponse.data});
+            setTask('');
+            setDescription('');
+            setPrevID(dataResponse.data.id);
         }
-        dispatchTasks({type: 'add', todo: item});
-        setTask('');
-        setDescription('');
-    }
-
-    
-
-    const handleCheckboxChange=(event, i)=>{
-        dispatchTasks({type: 'toggle', index: i, value: event.target.checked })
     }
     
-    const deleteTask = (event, i) => {
-        dispatchTasks({type: 'delete', index: i})
+    useEffect(getTodos, []);
+
+    const toggleDispatcher=()=>{
+        if(toggleResponse?.data){
+            dispatchTasks({type: 'toggle', value: toggleResponse.data })
+            toggleResponse.data = undefined;
+        }
     };
 
-    const onLogoutHandler =()=>{
+    const handleCheckboxChange=(val)=>{
+        val.isCompleted = !val.isCompleted;
+        if(val.isCompleted)
+            val.dateCompleted = new Date().toLocaleDateString();
+        else
+            val.dateCompleted = null;
 
-        todoEventBind({user: loggedInUser.user, todos: tasks});
+        toggleTodo(val);
+    }
+
+
+    
+    const deleteTask = (val) => {
+
+       deleteTodo(val);
+       dispatchTasks({type: 'delete', value: val.id});
+    };
+
+   
+    const onLogoutHandler =()=>{
+       
+        stateContext.loggedInUser.todos = tasks;
+        stateContext.dispatchUsers({type: 'LOGOUT', user : stateContext?.loggedInUser});
+
         navigate('/');
 
     };
 
     useEffect(() => {
-
-    });
+        if(todoResponse?.data && tasks.length === 0){
+            dispatchTasks({type: 'loadTodos', todos: todoResponse.data})
+        }
+        addDispatcher(addResponse);
+        toggleDispatcher();
+    }, [todoResponse, addResponse, toggleResponse]);
 
     return (
         <div className="container container-todo">
             <div className='wrapper-todo'>
                 <div className='row '>
                     <div className='col justify-content-start'>
-                        <label>Logged in User: {loggedInUser.user.userName} </label>
+                        <label>Logged in User: {stateContext?.loggedInUser.user.email} </label>
                     </div>
                     <div className='col justify-content-end button-signout-justify'>
                         <button to="/" type="submit" className='button-logout button-add' onClick={onLogoutHandler}> SIGN OUT </button>
-                        
                     </div>
                 </div>
                 <div className='row justify-content-end'>
@@ -128,7 +179,7 @@ function Todo({todoEventBind, loggedInUser}) {
                                <div className='row row-width'>
                                     <div className='col-1'>
                                         <label >
-                                            <input type="checkbox" checked={val.isCompleted} onClick={(e) => handleCheckboxChange(e, i)}>
+                                            <input type="checkbox" checked={val.isCompleted} onClick={(e) => handleCheckboxChange(val)}>
                                             </input>
                                         </label>
                                     </div>
@@ -154,7 +205,7 @@ function Todo({todoEventBind, loggedInUser}) {
                                     </div>
 
                                     <div className='col-1 button-delete-div'>
-                                        <button className='button-delete' onClick={(e) => deleteTask(e, i)}>
+                                        <button className='button-delete' onClick={(e) => deleteTask(val)}>
                                          </button>
 
                                     </div>
