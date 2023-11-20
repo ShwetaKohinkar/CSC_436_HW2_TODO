@@ -9,7 +9,7 @@ import axios from 'axios';
 import { RequestProvider } from 'react-request-hook';
 
 
-const axiosInstance = axios.create({baseURL: 'http://localhost:4000/'});
+const axiosInstance = axios.create({baseURL: 'http://localhost:3000/'});
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(

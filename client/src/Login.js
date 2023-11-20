@@ -7,16 +7,16 @@ import { useResource } from 'react-request-hook';
 function Login() {
 
     const navigate = useNavigate();
-    const stateContext = useContext(StateContext);
+    const {state, dispatch} = useContext(StateContext);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [errorMsg, setErrorMsg] = useState('');
 
     let loggedInUser = null;
     const [loginResponse, attemptLogin] = useResource(()=>({
-        url: '/login',
+        url: '/auth/login',
         method: 'post',
-        data: {email: email, password: password}
+        data: {username: email, password: password}
     }));
 
     const login = (e)=>{
@@ -24,40 +24,18 @@ function Login() {
 
         attemptLogin();
 
-
-        // stateContext.users.map((obj, i) => {
-        //     if(obj.user.email === email ){
-        //         if(obj.user.password === password){ 
-        //             loggedInUser = obj;
-        //             setErrorMsg('');
-        //         }
-        //         else{
-        //             setErrorMsg('Password doesn\'t match');
-        //         }
-        //     }
-        // });
-        // if(loggedInUser !== null && loggedInUser.length !==0 ){
-        //     //loginEventBind(loggedInUser)
-            
-        //}
-        // else if(loggedInUser === null || loggedInUser.length === 0 || errorMsg === ''){
-        //     setErrorMsg('User not regsitered');
-        // }
-    }
-
-    const loginDispatcher= (loginResponseIn)=>{
-        stateContext.dispatchUsers({type: 'LOGIN', user: loginResponseIn.data});
-        navigate("/todo");
     }
 
     useEffect(() => {
-        if(loginResponse?.data){
-            loginDispatcher(loginResponse);
+        console.log(loginResponse.data);
+
+        if(!loginResponse.isLoading && loginResponse?.data){
+            console.log(loginResponse.data);
+            dispatch({type: 'LOGIN', user: {username: email, access_token: loginResponse.data.access_token}});
+            navigate("/todo");
         }
 
     },[loginResponse]);
-
-    
 
     return (
         <div className="container container-login">

@@ -4,69 +4,73 @@ import { useContext, useEffect, useReducer, useState } from 'react';
 import { StateContext } from './context';
 import { useResource } from 'react-request-hook';
 
-
-const taskReducer = (tasks, action) => {
-
-    switch(action.type){
-        case 'add':
-            return [...tasks, action.todo];
-
-        case 'toggle':
-
-            tasks.map((val) =>{
-                if(val.id===action.value.id){
-                    val = action.value;
-                }
-            });
-            return [...tasks];
-
-        case 'delete':
-            tasks = tasks.filter((val) => val.id != action.value);
-
-            return[...tasks];
-
-        case 'loadTodos':
-                
-                return [...action.todos];
-        default:
-            return tasks;
-
-    }
-};
-
 function Todo() {
 
-    const stateContext = useContext(StateContext);
-    const [id, setID] = useState('');
+    const {state, dispatch} = useContext(StateContext);
     const [task, setTask] = useState('');
     const [description, setDescription] = useState('');
-    const [email, setEmail] = useState(stateContext?.loggedInUser?.user?.email);
+    const {user, todos} = state;
 
-    const[tasks, dispatchTasks] = useReducer(taskReducer, []);
     const navigate = useNavigate();
     
     const [todoResponse, getTodos]  = useResource(()=>({
-        url: `/todos?email=${email}`,
-        method: 'get'
+        url: `/todo`,
+        method: 'get',
+        headers: {'Authorization': `${user?.access_token}`}
     }));
 
-    const [deleteResponse, deleteTodo]  = useResource((item)=>({
-        url: `/todos/${item.id}`,
-        method: 'delete'
-    }));
+    useEffect(() => {
+        console.log(user);
+        getTodos();
+    }, [user?.access_token]);
 
-    const [prevAddId, setPrevID] = useState();
+    useEffect(() => {
+        if(!todoResponse.isLoading && todoResponse?.data){
+            dispatch({type: 'fetch', todos: todoResponse.data  })
+        }
+    }, [todoResponse]);
+
+
+    //Add Todo
     const [addResponse, addTodoFunc] = useResource((item)=>({
-        url: '/todos',
+        url: `/todo`,
         method: 'post',
-        data: item
+        data: item,
+        headers: {'Authorization': `${user?.access_token}`}
     }));
 
-    const [toggleResponse, toggleTodo] = useResource((item)=>({
-        url: `/todos/${item.id}`,
-        method: 'put',
-        data: item
+    useEffect(() => {
+        if(!addResponse.isLoading && addResponse?.data){
+            dispatch({type: 'add', todo: addResponse.data});
+        }
+    },[addResponse]);
+
+    //Delete Todo
+    const [deleteResponse, deleteTodo]  = useResource((item)=>({
+        url: `/todo/${item._id}`,
+        method: 'delete',
+        headers: {'Authorization': `${user?.access_token}`}
     }));
+
+    useEffect(() => {
+        if(!deleteResponse.isLoading && deleteResponse?.data){
+            dispatch({type: 'delete', _id: deleteResponse.data._id});
+        }
+    }, [deleteResponse]);
+
+    //Toggle Todo
+    const [toggleResponse, toggleTodo] = useResource((item)=>({
+        url: `/todo/${item._id}`,
+        method: 'put',
+        data: item,
+        headers: {'Authorization': `${user?.access_token}`}
+    }));
+
+    useEffect(() => {
+        if(!toggleResponse.isLoading && toggleResponse?.data){
+            dispatch({type: 'toggle', id: toggleResponse.data._id});
+        }
+    }, [toggleResponse]);
 
     function addTask(e){
         e.preventDefault();
@@ -74,31 +78,14 @@ function Todo() {
         const item ={
             "title" : task,
             "description": description,
-            "email": email,
             "dateCreated": new Date().toLocaleDateString(),
             "isCompleted": false, 
             "dateCompleted": null
-        }   
+        } 
+        setDescription('');
+        setTask('');  
         addTodoFunc(item);
     }
-
-    const addDispatcher=(dataResponse)=>{
-        if(dataResponse?.data && prevAddId !== dataResponse.data.id){
-            dispatchTasks({type: 'add', todo: dataResponse.data});
-            setTask('');
-            setDescription('');
-            setPrevID(dataResponse.data.id);
-        }
-    }
-    
-    useEffect(getTodos, []);
-
-    const toggleDispatcher=()=>{
-        if(toggleResponse?.data){
-            dispatchTasks({type: 'toggle', value: toggleResponse.data })
-            toggleResponse.data = undefined;
-        }
-    };
 
     const handleCheckboxChange=(val)=>{
         val.isCompleted = !val.isCompleted;
@@ -109,39 +96,24 @@ function Todo() {
 
         toggleTodo(val);
     }
-
-
     
     const deleteTask = (val) => {
-
        deleteTodo(val);
-       dispatchTasks({type: 'delete', value: val.id});
     };
 
    
     const onLogoutHandler =()=>{
-       
-        stateContext.loggedInUser.todos = tasks;
-        stateContext.dispatchUsers({type: 'LOGOUT', user : stateContext?.loggedInUser});
-
+        dispatch({type: 'LOGOUT', user : state?.user});
         navigate('/');
 
     };
-
-    useEffect(() => {
-        if(todoResponse?.data && tasks.length === 0){
-            dispatchTasks({type: 'loadTodos', todos: todoResponse.data})
-        }
-        addDispatcher(addResponse);
-        toggleDispatcher();
-    }, [todoResponse, addResponse, toggleResponse]);
 
     return (
         <div className="container container-todo">
             <div className='wrapper-todo'>
                 <div className='row '>
                     <div className='col justify-content-start'>
-                        <label>Logged in User: {stateContext?.loggedInUser.user.email} </label>
+                        <label>Logged in User: {user.username} </label>
                     </div>
                     <div className='col justify-content-end button-signout-justify'>
                         <button to="/" type="submit" className='button-logout button-add' onClick={onLogoutHandler}> SIGN OUT </button>
@@ -173,7 +145,7 @@ function Todo() {
                 <div className='row tasks-wrapper'>
 
                 {
-                    tasks?.map((val,i) => {
+                    todos?.map((val,i) => {
                         return (
                             <div className='todo-wrapper' key={i}>
                                <div className='row row-width'>
